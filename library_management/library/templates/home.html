@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>BlackShelf Library</title>
+
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+  <style>
+    body {
+      background-color: #0f172a;
+      color: white;
+    }
+
+    /* Hero Section */
+    .hero {
+      background: url("https://wallpapers.com/images/hd/library-art-book-theme-rth0ek661fi3zdwz.jpg") no-repeat center center/cover;
+      height: 60vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+    }
+
+    .hero h1 {
+      font-size: 3rem;
+      font-weight: bold;
+    }
+
+    .hero p {
+      font-size: 1.2rem;
+    }
+
+    /* Cards */
+    .card {
+      color: white;
+      background-color: #1e293b;
+      border: none;
+      transition: 0.3s;
+    }
+
+    .card:hover {
+      transform: scale(1.05);
+      box-shadow: 0px 10px 25px rgba(0,0,0,0.5);
+    }
+
+    .card img {
+      height: 200px;
+      object-fit: cover;
+    }
+
+    /* Contact */
+    .contact {
+      background: #020617;
+      padding: 40px;
+      margin-top: 50px;
+    }
+  </style>
+
+</head>
+
+<body>
+
+  <!-- NAVBAR -->
+  <nav class="navbar navbar-expand-lg navbar-dark bg-black">
+    <div class="container-fluid">
+      <a class="navbar-brand fw-bold" href="/"> BlackShelf</a>
+
+      <!-- Toggle button -->
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+
+      <div class="collapse navbar-collapse" id="navbarContent">
+
+        <!-- Search -->
+        <form class="d-flex ms-auto me-3" method="GET" action="/search">
+          <input class="form-control me-2" type="search" name="q" placeholder="Search books">
+          <button class="btn btn-outline-light">Search</button>
+        </form>
+
+        {% if user.is_authenticated %}
+        <span class="me-3">Hi, {{ user.username }}</span>
+        <a href="/logout" class="btn btn-danger">Logout</a>
+        {% else %}
+        <a href="/login" class="btn btn-outline-light me-2">Login</a>
+        <a href="/signup" class="btn btn-success">Signup</a>
+        {% endif %}
+
+      </div>
+    </div>
+  </nav>
+
+  <!-- HERO SECTION -->
+  <div class="hero">
+    <div>
+      <h1>Welcome to BlackShelf </h1>
+      <p>Explore, Issue, and Manage Books Easily</p>
+    </div>
+  </div>
+
+  <!-- BOOK SECTION -->
+  <div class="container mt-5">
+    <h2 class="mb-4 text-center">📖 Available Books</h2>
+
+    <div class="row">
+      {% for book in books %}
+      <div class="col-md-4">
+        <div class="card mb-4 shadow">
+
+          <!-- Book Image -->
+          {% if book.image %}
+          <img src="{{ book.image.url }}" class="card-img-top">
+          {% else %}
+          <img src="https://via.placeholder.com/300x200" class="card-img-top">
+          {% endif %}
+
+          <div class="card-body">
+            <h5>{{ book.title }}</h5>
+            <p>Author: {{ book.author }}</p>
+            <p>Available: {{ book.available_copies }}</p>
+
+            <a href="/issue/{{ book.id }}" class="btn btn-primary w-100">Issue Book</a>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- ISSUED BOOKS -->
+  <div class="container mt-5">
+    <h2>Your Issued Books 📚</h2>
+
+    <ul class="list-group">
+      {% for issue in issued_books %}
+      <li id="issue-{{ issue.id }}" class="list-group-item bg-dark text-white d-flex justify-content-between align-items-center">
+        {{ issue.book.title }} (Due: {{ issue.due_date }})
+
+        <button onclick="returnBook({{ issue.id }})" class="btn btn-danger btn-sm">
+          Return
+        </button>
+      </li>
+      {% endfor %}
+    </ul>
+  </div>
+
+  <!-- CONTACT SECTION -->
+  <div class="contact text-center">
+    <h3>Contact Us</h3>
+    <p>Email: blackshelf@gmail.com</p>
+    <p>Phone: +91 9876543210</p>
+    <p>Location: Kolkata, India</p>
+  </div>
+
+  <!-- RETURN SCRIPT -->
+  <script>
+    function returnBook(issueId) {
+      fetch(`/return/${issueId}/`)
+        .then(response => response.json())
+        .then(data => {
+          alert(data.message);
+
+          // Remove book instantly
+          document.getElementById("issue-" + issueId).remove();
+        })
+        .catch(error => console.log(error));
+    }
+  </script>
+
+  <!-- Bootstrap JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+</body>
+
+</html>
